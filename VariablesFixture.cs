@@ -9,7 +9,7 @@ using ABB.Vtrin.Drivers;
 
 namespace CalcEngineTutorialSetup
 {
-    class VariablesFixture
+    class VariablesFixture : IFixture
     {
         private cDriverSkeleton driver;
 
@@ -45,6 +45,8 @@ namespace CalcEngineTutorialSetup
         }
 
         public void Cleanup()
-        { }
+        {
+            // TODO
+        }
     }
 }

@@ -12,6 +12,12 @@ namespace CalcEngineTutorialSetup
         private static string username;
         private static string password;
 
+        private static uint numberOfSites = 1;
+
+        private static bool cleanup = false;
+
+        private static List<IFixture> fixtures;
+
         static void Main(string[] args)
         {
             parseArgs(args);
@@ -22,13 +28,46 @@ namespace CalcEngineTutorialSetup
 
                 Console.WriteLine("Connection successful");
 
-                var variables = new VariablesFixture(dbConnection.RTDBDriver);
-                variables.Setup();
+                fixtures = new List<IFixture>()
+                {
+                    new VariablesFixture(dbConnection.RTDBDriver),
+                    new EquipmentModelFixture(dbConnection.RTDBDriver, numberOfSites),
+                };
+
+                if (cleanup)
+                {
+                    Cleanup();
+                }
+                else
+                {
+                    Setup();
+                }
+            }
+        }
+
+        static void Setup()
+        {
+            foreach (var fixture in fixtures)
+            {
+                fixture.Setup();
+            }
+        }
+
+        static void Cleanup()
+        {
+            foreach (var fixture in fixtures)
+            {
+                fixture.Cleanup();
             }
         }
 
         static void parseArgs(string[] args)
         {
+            if (args[0] == "cleanup")
+            {
+                cleanup = true;
+            }
+
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-h" && i < args.Length - 1)
@@ -43,6 +82,10 @@ namespace CalcEngineTutorialSetup
                 if (args[i] == "-p" && i < args.Length - 1)
                 {
                     password = args[i + 1];
+                }
+                if (args[i] == "-s" && i < args.Length - 1)
+                {
+                    numberOfSites = uint.Parse(args[i + 1]);
                 }
             }
 
