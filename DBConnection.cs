@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using ABB.Vtrin;
@@ -15,9 +17,9 @@ namespace CalcEngineTutorialSetup
 
         private readonly string RTDBHost;
         private readonly string RTDBUsername;
-        private readonly string RTDBPassword;
+        private readonly SecureString RTDBPassword;
 
-        public DBConnection(string _RTDBHost, string _RTDBUsername, string _RTDBPassword)
+        public DBConnection(string _RTDBHost, string _RTDBUsername, SecureString _RTDBPassword)
         {
             RTDBHost = _RTDBHost;
             RTDBUsername = _RTDBUsername;
@@ -38,13 +40,11 @@ namespace CalcEngineTutorialSetup
                     | ABB.Vtrin.cDataLoader.cConnectOptions.AcceptServerKeyChanges;
 
                 // Initialize the database driver
-#pragma warning disable CS0618 // Type or member is obsolete
                 RTDBDriver = dataloader.Connect(
                     RTDBHost,
                     RTDBUsername,
                     RTDBPassword,
                     false);
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 // Unbind the connect listener
                 System.Diagnostics.Trace.Listeners.Remove("connectlistener");

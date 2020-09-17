@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,7 +12,7 @@ namespace CalcEngineTutorialSetup
     {
         private static string hostname;
         private static string username;
-        private static string password;
+        private static SecureString password;
 
         private static uint numberOfSites = 1;
 
@@ -21,6 +23,11 @@ namespace CalcEngineTutorialSetup
         static void Main(string[] args)
         {
             parseArgs(args);
+
+            if (password == null)
+            {
+                getPassword();
+            }
 
             using (DBConnection dbConnection = new DBConnection(hostname, username, password))
             {
@@ -45,7 +52,7 @@ namespace CalcEngineTutorialSetup
             }
         }
 
-        static void Setup()
+        static private void Setup()
         {
             foreach (var fixture in fixtures)
             {
@@ -53,7 +60,7 @@ namespace CalcEngineTutorialSetup
             }
         }
 
-        static void Cleanup()
+        static private void Cleanup()
         {
             foreach (var fixture in fixtures)
             {
@@ -61,7 +68,7 @@ namespace CalcEngineTutorialSetup
             }
         }
 
-        static void parseArgs(string[] args)
+        static private void parseArgs(string[] args)
         {
             if (args[0] == "cleanup")
             {
@@ -78,10 +85,9 @@ namespace CalcEngineTutorialSetup
                 {
                     username = args[i + 1];
                 }
-                // TODO It's not a secure way to enter the password into a command
                 if (args[i] == "-p" && i < args.Length - 1)
                 {
-                    password = args[i + 1];
+                    password = new NetworkCredential("", args[i + 1]).SecurePassword;
                 }
                 if (args[i] == "-s" && i < args.Length - 1)
                 {
@@ -97,9 +103,37 @@ namespace CalcEngineTutorialSetup
             {
                 throw new System.ArgumentException("Define username using -u <username>");
             }
-            if (password == null)
+        }
+
+        static private void getPassword()
+        {
+            Console.Write($"Password for {username}@{hostname}: ");
+
+            // From https://stackoverflow.com/a/3404522/2876520
+
+            password = new SecureString();
+
+            while (true)
             {
-                throw new System.ArgumentException("Define password using -p <password>");
+                ConsoleKeyInfo i = Console.ReadKey(true);
+                if (i.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    break;
+                }
+                else if (i.Key == ConsoleKey.Backspace)
+                {
+                    if (password.Length > 0)
+                    {
+                        password.RemoveAt(password.Length - 1);
+                        Console.Write("\b \b");
+                    }
+                }
+                else if (i.KeyChar != '\u0000') // KeyChar == '\u0000' if the key pressed does not correspond to a printable character, e.g. F1, Pause-Break, etc
+                {
+                    password.AppendChar(i.KeyChar);
+                    Console.Write("*");
+                }
             }
         }
     }
