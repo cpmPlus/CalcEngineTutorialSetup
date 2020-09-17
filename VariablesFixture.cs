@@ -46,7 +46,12 @@ namespace CalcEngineTutorialSetup
 
         public void Cleanup()
         {
-            // TODO
+            var variables = driver.Classes["Variable"].Instances.GetInstanceSet("Name LIKE 'CalcTutorial_*'");
+
+            foreach (var variable in variables)
+            {
+                variable.Remove();
+            }
         }
     }
 }

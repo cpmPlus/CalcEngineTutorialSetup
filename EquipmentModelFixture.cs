@@ -369,16 +369,5 @@ namespace CalcEngineTutorialSetup
             driver.Classes["Equipment"].Instances.GetInstanceByName("Electrical device")?.Remove();
             driver.Classes["Equipment"].Instances.GetInstanceByName("Device")?.Remove();
         }
-
-        private void DeleteEquipmentInstancesByType(
-            ABB.Vtrin.cDbClass equipmentType)
-        {
-            var instances = equipmentType.Instances.GetInstanceSet();
-
-            foreach (var instance in instances)
-            {
-                instance.Remove();
-            }
-        }
     }
 }
