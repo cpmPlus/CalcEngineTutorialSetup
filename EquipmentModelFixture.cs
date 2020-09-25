@@ -119,8 +119,24 @@ namespace CalcEngineTutorialSetup
             CreateOrUpdateEquipmentProperty(
                 propertyName: "Volume",
                 propertyType: ABB.Vtrin.cTypeCode.Double,
-                propertyUnit: "m3",
-                propertyDescription: "The volume of the water tank",
+                propertyUnit: "l",
+                propertyDescription: "The total capacity of the tank",
+                isHistorized: false,
+                equipmentType: tankType);
+
+            CreateOrUpdateEquipmentProperty(
+                propertyName: "ContentsVolume",
+                propertyType: ABB.Vtrin.cTypeCode.Double,
+                propertyUnit: "l",
+                propertyDescription: "The volume of water in the tank. This is calculated from Level and Diameter",
+                isHistorized: true,
+                equipmentType: tankType);
+
+            CreateOrUpdateEquipmentProperty(
+                propertyName: "Diameter",
+                propertyType: ABB.Vtrin.cTypeCode.Double,
+                propertyUnit: "mm",
+                propertyDescription: "The diameter of the tank. The tank is a cylinder.",
                 isHistorized: false,
                 equipmentType: tankType);
 
@@ -311,11 +327,17 @@ namespace CalcEngineTutorialSetup
 
             targetTank = targetTank.BeginUpdate();
             targetTank["Volume"] = 1000;
+            targetTank["Diameter"] = 1128;
+            targetTank["Level"] = 500;
+            targetTank["ContentsVolume"] = 0;
             targetTank["Manufacturer"] = "Tank Company";
             targetTank.CommitChanges();
 
             sourceTank = sourceTank.BeginUpdate();
             sourceTank["Volume"] = 1000;
+            sourceTank["Diameter"] = 1128;
+            sourceTank["Level"] = 500;
+            sourceTank["ContentsVolume"] = 0;
             sourceTank["Manufacturer"] = "Tank Company";
             sourceTank.CommitChanges();
 

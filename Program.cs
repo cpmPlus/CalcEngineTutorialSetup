@@ -44,10 +44,12 @@ namespace CalcEngineTutorialSetup
                 if (cleanup)
                 {
                     Cleanup();
+                    Console.WriteLine("Cleanup successful");
                 }
                 else
                 {
                     Setup();
+                    Console.WriteLine("Setup successful");
                 }
             }
         }
