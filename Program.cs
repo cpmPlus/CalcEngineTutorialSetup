@@ -90,6 +90,10 @@ namespace CalcEngineTutorialSetup
                 {
                     Context.NumberOfSites = uint.Parse(args[i + 1]);
                 }
+                if (args[i] == "-c" && i < args.Length - 1)
+                {
+                    Context.CalcUsername = args[i + 1];
+                }
             }
 
             if (Context.Hostname == null)

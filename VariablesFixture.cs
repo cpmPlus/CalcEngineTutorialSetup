@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ABB.Vtrin;
 using ABB.Vtrin.Controls;
@@ -13,12 +14,21 @@ namespace CalcEngineTutorialSetup
     {
         public void Setup()
         {
-            addVariable("CalcTutorial_A", 10.0, "Calc Engine tutorial");
-            addVariable("CalcTutorial_B", 20.0, "Calc Engine tutorial");
-            addVariable("CalcTutorial_C", 0.0,  "Calc Engine tutorial");
+            createVariableFacade("CalcTutorial_A", 10.0, "Calc Engine tutorial");
+            createVariableFacade("CalcTutorial_B", 20.0, "Calc Engine tutorial");
+            createVariableFacade("CalcTutorial_C", 0.0, "Calc Engine tutorial");
         }
 
-        private void addVariable(string name, object value, string description)
+        private void createVariableFacade(string name, object value, string description)
+        {
+            var variable = addVariable(name, value, description);
+            if (Context.CalcUsername != null)
+            {
+                addVariableAcl(variable);
+            }
+        }
+
+        private cDbVariable addVariable(string name, object value, string description)
         {
             var variableCache = Context.Driver.Classes["Variable"].Instances;
 
@@ -35,9 +45,11 @@ namespace CalcEngineTutorialSetup
             var cv = variable.pCurrentValue.BeginUpdate();
             cv.Value = value;
             cv.CommitChanges();
+
+            return variable;
         }
 
-        public void Cleanup()
+        private void removeVariables()
         {
             var variables = Context.Driver.Classes["Variable"].Instances.GetInstanceSet("Name LIKE 'CalcTutorial_*'");
 
@@ -45,6 +57,41 @@ namespace CalcEngineTutorialSetup
             {
                 variable.Remove();
             }
+        }
+
+        private void addVariableAcl(cDbVariable variable)
+        {
+            var aclCache = Context.Driver.Classes["UIAccessControlListEntry"].Instances;
+
+            var aclEntrySet = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet($"Object LIKE '{variable.Name}'");
+
+            var aclEntry = aclEntrySet.Length > 0 ? aclEntrySet[0]?.BeginUpdate() : null;
+            if (aclEntry == null)
+            {
+                aclEntry = aclCache.Add();
+            }
+
+            aclEntry.SetRawPropertyValue("ObjectRef", $"/Variable/{variable.Id}");
+            aclEntry["GroupOrUserName"] = Context.CalcUsername;
+            aclEntry.SetRawPropertyValue("Allow", cDbPermissions.Write | cDbPermissions.Execute);
+
+            aclEntry.CommitChanges();
+        }
+
+        private void removeAclEntries()
+        {
+            var aclEntries = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet("Object LIKE 'CalcTutorial_*'");
+
+            foreach (var aclEntry in aclEntries)
+            {
+                aclEntry.Remove();
+            }
+        }
+
+        public void Cleanup()
+        {
+            removeAclEntries();
+            removeVariables();
         }
     }
 }

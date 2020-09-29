@@ -18,6 +18,8 @@ namespace CalcEngineTutorialSetup
 
         public static bool Cleanup { get; set; } = false;
 
+        public static string CalcUsername { get; set; }
+
         public static cDriverSkeleton Driver;
     }
 }
