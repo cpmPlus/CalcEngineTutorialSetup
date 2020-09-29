@@ -10,13 +10,6 @@ namespace CalcEngineTutorialSetup
 {
     class Program
     {
-        private static string hostname;
-        private static string username;
-        private static SecureString password;
-
-        private static uint numberOfSites = 1;
-
-        private static bool cleanup = false;
 
         private static List<IFixture> fixtures;
 
@@ -24,24 +17,26 @@ namespace CalcEngineTutorialSetup
         {
             parseArgs(args);
 
-            if (password == null)
+            if (Context.Password == null)
             {
                 getPassword();
             }
 
-            using (DBConnection dbConnection = new DBConnection(hostname, username, password))
+            using (DBConnection dbConnection = new DBConnection(Context.Hostname, Context.Username, Context.Password))
             {
                 dbConnection.ConnectOrThrow();
+
+                Context.Driver = dbConnection.RTDBDriver;
 
                 Console.WriteLine("Connection successful");
 
                 fixtures = new List<IFixture>()
                 {
-                    new VariablesFixture(dbConnection.RTDBDriver),
-                    new EquipmentModelFixture(dbConnection.RTDBDriver, numberOfSites),
+                    new VariablesFixture(),
+                    new EquipmentModelFixture(),
                 };
 
-                if (cleanup)
+                if (Context.Cleanup)
                 {
                     Cleanup();
                     Console.WriteLine("Cleanup successful");
@@ -74,34 +69,34 @@ namespace CalcEngineTutorialSetup
         {
             if (args[0] == "cleanup")
             {
-                cleanup = true;
+                Context.Cleanup = true;
             }
 
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-h" && i < args.Length - 1)
                 {
-                    hostname = args[i + 1];
+                    Context.Hostname = args[i + 1];
                 }
                 if (args[i] == "-u" && i < args.Length - 1)
                 {
-                    username = args[i + 1];
+                    Context.Username = args[i + 1];
                 }
                 if (args[i] == "-p" && i < args.Length - 1)
                 {
-                    password = new NetworkCredential("", args[i + 1]).SecurePassword;
+                    Context.Password = new NetworkCredential("", args[i + 1]).SecurePassword;
                 }
                 if (args[i] == "-s" && i < args.Length - 1)
                 {
-                    numberOfSites = uint.Parse(args[i + 1]);
+                    Context.NumberOfSites = uint.Parse(args[i + 1]);
                 }
             }
 
-            if (hostname == null)
+            if (Context.Hostname == null)
             {
                 throw new System.ArgumentException("Define hostname using -h <hostname>");
             }
-            if (username == null)
+            if (Context.Username == null)
             {
                 throw new System.ArgumentException("Define username using -u <username>");
             }
@@ -109,11 +104,11 @@ namespace CalcEngineTutorialSetup
 
         static private void getPassword()
         {
-            Console.Write($"Password for {username}@{hostname}: ");
+            Console.Write($"Password for {Context.Username}@{Context.Hostname}: ");
 
             // From https://stackoverflow.com/a/3404522/2876520
 
-            password = new SecureString();
+            var password = new SecureString();
 
             while (true)
             {
@@ -137,6 +132,8 @@ namespace CalcEngineTutorialSetup
                     Console.Write("*");
                 }
             }
+
+            Context.Password = password;
         }
     }
 }

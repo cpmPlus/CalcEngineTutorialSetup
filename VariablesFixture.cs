@@ -11,13 +11,6 @@ namespace CalcEngineTutorialSetup
 {
     class VariablesFixture : IFixture
     {
-        private cDriverSkeleton driver;
-
-        public VariablesFixture(cDriverSkeleton _driver)
-        {
-            driver = _driver;
-        }
-
         public void Setup()
         {
             addVariable("CalcTutorial_A", 10.0, "Calc Engine tutorial");
@@ -27,7 +20,7 @@ namespace CalcEngineTutorialSetup
 
         private void addVariable(string name, object value, string description)
         {
-            var variableCache = driver.Classes["Variable"].Instances;
+            var variableCache = Context.Driver.Classes["Variable"].Instances;
 
             var variable = (cDbVariable)variableCache[name]?.BeginUpdate();
             if (variable == null)
@@ -46,7 +39,7 @@ namespace CalcEngineTutorialSetup
 
         public void Cleanup()
         {
-            var variables = driver.Classes["Variable"].Instances.GetInstanceSet("Name LIKE 'CalcTutorial_*'");
+            var variables = Context.Driver.Classes["Variable"].Instances.GetInstanceSet("Name LIKE 'CalcTutorial_*'");
 
             foreach (var variable in variables)
             {

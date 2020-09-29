@@ -11,29 +11,19 @@ namespace CalcEngineTutorialSetup
 {
     class EquipmentModelFixture : IFixture
     {
-        private cDriverSkeleton driver;
-
-        private uint numberOfSites;
-
-        public EquipmentModelFixture(cDriverSkeleton _driver, uint _numberOfSites)
-        {
-            driver = _driver;
-            numberOfSites = _numberOfSites;
-        }
-
         public void Setup()
         {
             // Create or update equipment type and properties
             CreateOrUpdateEquipmentTypes();
 
             // Create or update equipment instances
-            if (numberOfSites > 1)
+            if (Context.NumberOfSites > 1)
             {
-                for (var site = 1; site <= numberOfSites; site++)
+                for (var site = 1; site <= Context.NumberOfSites; site++)
                 {
                     CreateOrUpdateEquipmentInstances(site);
 
-                    if (site != numberOfSites)
+                    if (site != Context.NumberOfSites)
                     {
                         // There's some concurrency issue after creating instances for one site
                         Thread.Sleep(300);
@@ -220,7 +210,7 @@ namespace CalcEngineTutorialSetup
             bool isAbstract = false,
             ABB.Vtrin.Interfaces.IEquipment baseEquipmentType = null)
         {
-            var equipmentCache = driver.Classes["Equipment"].Instances;
+            var equipmentCache = Context.Driver.Classes["Equipment"].Instances;
 
             // Try to find existing equipment type with the given name
             var equipmentType =
@@ -250,7 +240,7 @@ namespace CalcEngineTutorialSetup
             string referenceTarget = null)
         {
             ABB.Vtrin.Interfaces.IPropertyDefinition property;
-            var equipmentPropertyInstances = driver.Classes["EquipmentPropertyInfo"].Instances;
+            var equipmentPropertyInstances = Context.Driver.Classes["EquipmentPropertyInfo"].Instances;
 
             // Query existing property infos using property name and equipment type
             var properties = equipmentPropertyInstances.GetInstanceSet("Equipment=? AND DisplayName=?", equipmentType, propertyName);
@@ -289,11 +279,11 @@ namespace CalcEngineTutorialSetup
 
             var sourceTank = GetOrCreateEquipmentInstance(
                 instanceName: $"{topLevelHierarchy}.Tank area.Source tank",
-                equipmentType: driver.Classes["Path_Tank"]);
+                equipmentType: Context.Driver.Classes["Path_Tank"]);
 
             var targetTank = GetOrCreateEquipmentInstance(
                 instanceName: $"{topLevelHierarchy}.Tank area.Target tank",
-                equipmentType: driver.Classes["Path_Tank"]);
+                equipmentType: Context.Driver.Classes["Path_Tank"]);
 
 
             // Define pipe instances
@@ -301,18 +291,18 @@ namespace CalcEngineTutorialSetup
 
             var mainPipe = GetOrCreateEquipmentInstance(
                 instanceName: $"{topLevelHierarchy}.Pipe",
-                equipmentType: driver.Classes["Path_Pipe"]);
+                equipmentType: Context.Driver.Classes["Path_Pipe"]);
 
             var flowbackPipe = GetOrCreateEquipmentInstance(
                 instanceName: $"{topLevelHierarchy}.Flowback pipe",
-                equipmentType: driver.Classes["Path_Pipe"]);
+                equipmentType: Context.Driver.Classes["Path_Pipe"]);
 
             // Define pump instance
             // ====================
 
             var pump = GetOrCreateEquipmentInstance(
                 instanceName: $"{topLevelHierarchy}.Pump section.Pump",
-                equipmentType: driver.Classes["Path_Pump"]);
+                equipmentType: Context.Driver.Classes["Path_Pump"]);
 
 
             // Defining instance properties
@@ -374,7 +364,7 @@ namespace CalcEngineTutorialSetup
 
         private void DeleteEquipmentInstances()
         {
-            var rootPaths = driver.Classes["Path"].Instances.GetInstanceSet("Name LIKE 'Example site*' AND Parent = NULL");
+            var rootPaths = Context.Driver.Classes["Path"].Instances.GetInstanceSet("Name LIKE 'Example site*' AND Parent = NULL");
 
             foreach (var path in rootPaths)
             {
@@ -384,12 +374,12 @@ namespace CalcEngineTutorialSetup
 
         private void DeleteEquipmentTypes()
         {
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Pipe")?.Remove();
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Tank")?.Remove();
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Pump")?.Remove();
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Mechanical device")?.Remove();
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Electrical device")?.Remove();
-            driver.Classes["Equipment"].Instances.GetInstanceByName("Device")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Pipe")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Tank")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Pump")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Mechanical device")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Electrical device")?.Remove();
+            Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Device")?.Remove();
         }
     }
 }
