@@ -18,7 +18,7 @@ namespace CalcEngineTutorialSetup
 
         public static bool Cleanup { get; set; } = false;
 
-        public static string Group { get; set; }
+        public static string Group { get; set; } = "\\RTDB-CalcUser";
 
         public static cDriverSkeleton Driver;
     }

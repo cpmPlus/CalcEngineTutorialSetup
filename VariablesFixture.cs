@@ -61,31 +61,12 @@ namespace CalcEngineTutorialSetup
 
         private void addVariableAcl(cDbVariable variable)
         {
-            var aclCache = Context.Driver.Classes["UIAccessControlListEntry"].Instances;
-
-            var aclEntrySet = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet($"Object LIKE '{variable.Name}'");
-
-            var aclEntry = aclEntrySet.Length > 0 ? aclEntrySet[0]?.BeginUpdate() : null;
-            if (aclEntry == null)
-            {
-                aclEntry = aclCache.Add();
-            }
-
-            aclEntry.SetRawPropertyValue("ObjectRef", $"/Variable/{variable.Id}");
-            aclEntry["GroupOrUserName"] = Context.Group;
-            aclEntry.SetRawPropertyValue("Allow", cDbPermissions.Write | cDbPermissions.Execute);
-
-            aclEntry.CommitChanges();
+            Acl.CreateAcl(variable.Name, $"/Variable/{variable.Id}");
         }
 
         private void removeAclEntries()
         {
-            var aclEntries = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet("Object LIKE 'CalcTutorial_*'");
-
-            foreach (var aclEntry in aclEntries)
-            {
-                aclEntry.Remove();
-            }
+            Acl.RemoveAclEntries("CalcTutorial_*");
         }
 
         public void Cleanup()

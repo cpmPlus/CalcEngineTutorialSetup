@@ -379,21 +379,7 @@ namespace CalcEngineTutorialSetup
             var pathCache = Context.Driver.Classes["Path"].Instances;
             var siteRootPath = pathCache.GetInstanceByName(topLevelHierarchy);
 
-            var aclCache = Context.Driver.Classes["UIAccessControlListEntry"].Instances;
-
-            var aclEntrySet = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet($"Object LIKE '{topLevelHierarchy}'");
-
-            var aclEntry = aclEntrySet.Length > 0 ? aclEntrySet[0]?.BeginUpdate() : null;
-            if (aclEntry == null)
-            {
-                aclEntry = aclCache.Add();
-            }
-
-            aclEntry.SetRawPropertyValue("ObjectRef", $"/Path/{siteRootPath.Id}");
-            aclEntry["GroupOrUserName"] = Context.Group;
-            aclEntry.SetRawPropertyValue("Allow", cDbPermissions.Write | cDbPermissions.Execute);
-
-            aclEntry.CommitChanges();
+            Acl.CreateAcl(topLevelHierarchy, $"/Path/{siteRootPath.Id}");
         }
 
         private void deleteEquipmentInstances()
@@ -418,12 +404,7 @@ namespace CalcEngineTutorialSetup
 
         private void removeAclEntries()
         {
-            var aclEntries = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet("Object LIKE 'Example site*'");
-
-            foreach (var aclEntry in aclEntries)
-            {
-                aclEntry.Remove();
-            }
+            Acl.RemoveAclEntries("Example site*");
         }
 
         private string getTopLevelHierarchyPrefix(int? site)
