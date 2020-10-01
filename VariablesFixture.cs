@@ -22,7 +22,7 @@ namespace CalcEngineTutorialSetup
         private void createVariableFacade(string name, object value, string description)
         {
             var variable = addVariable(name, value, description);
-            if (Context.CalcUsername != null)
+            if (Context.Group != null)
             {
                 addVariableAcl(variable);
             }
@@ -72,7 +72,7 @@ namespace CalcEngineTutorialSetup
             }
 
             aclEntry.SetRawPropertyValue("ObjectRef", $"/Variable/{variable.Id}");
-            aclEntry["GroupOrUserName"] = Context.CalcUsername;
+            aclEntry["GroupOrUserName"] = Context.Group;
             aclEntry.SetRawPropertyValue("Allow", cDbPermissions.Write | cDbPermissions.Execute);
 
             aclEntry.CommitChanges();

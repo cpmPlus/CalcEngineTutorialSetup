@@ -21,7 +21,7 @@ namespace CalcEngineTutorialSetup
             {
                 for (var site = 1; site <= Context.NumberOfSites; site++)
                 {
-                    CreateOrUpdateEquipmentInstances(site);
+                    createSiteFacade(site);
 
                     if (site != Context.NumberOfSites)
                     {
@@ -32,14 +32,15 @@ namespace CalcEngineTutorialSetup
             }
             else
             {
-                CreateOrUpdateEquipmentInstances(null);
+                createSiteFacade(null);
             }
         }
 
         public void Cleanup()
         {
-            DeleteEquipmentInstances();
-            DeleteEquipmentTypes();
+            removeAclEntries();
+            deleteEquipmentInstances();
+            deleteEquipmentTypes();
         }
 
         private void CreateOrUpdateEquipmentTypes()
@@ -272,7 +273,7 @@ namespace CalcEngineTutorialSetup
 
         private void CreateOrUpdateEquipmentInstances(int? site)
         {
-            string topLevelHierarchy = $"Example site{(site != null ? " " + site : "")}";
+            string topLevelHierarchy = getTopLevelHierarchyPrefix(site);
 
             // Define tank instances
             // =====================
@@ -362,7 +363,40 @@ namespace CalcEngineTutorialSetup
             return instance;
         }
 
-        private void DeleteEquipmentInstances()
+        private void createSiteFacade(int? site)
+        {
+            CreateOrUpdateEquipmentInstances(site);
+            if (Context.Group != null)
+            {
+                addAclEntryForSite(site);
+            }
+        }
+
+        private void addAclEntryForSite(int? site)
+        {
+            string topLevelHierarchy = getTopLevelHierarchyPrefix(site);
+
+            var pathCache = Context.Driver.Classes["Path"].Instances;
+            var siteRootPath = pathCache.GetInstanceByName(topLevelHierarchy);
+
+            var aclCache = Context.Driver.Classes["UIAccessControlListEntry"].Instances;
+
+            var aclEntrySet = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet($"Object LIKE '{topLevelHierarchy}'");
+
+            var aclEntry = aclEntrySet.Length > 0 ? aclEntrySet[0]?.BeginUpdate() : null;
+            if (aclEntry == null)
+            {
+                aclEntry = aclCache.Add();
+            }
+
+            aclEntry.SetRawPropertyValue("ObjectRef", $"/Path/{siteRootPath.Id}");
+            aclEntry["GroupOrUserName"] = Context.Group;
+            aclEntry.SetRawPropertyValue("Allow", cDbPermissions.Write | cDbPermissions.Execute);
+
+            aclEntry.CommitChanges();
+        }
+
+        private void deleteEquipmentInstances()
         {
             var rootPaths = Context.Driver.Classes["Path"].Instances.GetInstanceSet("Name LIKE 'Example site*' AND Parent = NULL");
 
@@ -372,7 +406,7 @@ namespace CalcEngineTutorialSetup
             }
         }
 
-        private void DeleteEquipmentTypes()
+        private void deleteEquipmentTypes()
         {
             Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Pipe")?.Remove();
             Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Tank")?.Remove();
@@ -380,6 +414,21 @@ namespace CalcEngineTutorialSetup
             Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Mechanical device")?.Remove();
             Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Electrical device")?.Remove();
             Context.Driver.Classes["Equipment"].Instances.GetInstanceByName("Device")?.Remove();
+        }
+
+        private void removeAclEntries()
+        {
+            var aclEntries = Context.Driver.Classes["UIAccessControlListEntry"].Instances.GetInstanceSet("Object LIKE 'Example site*'");
+
+            foreach (var aclEntry in aclEntries)
+            {
+                aclEntry.Remove();
+            }
+        }
+
+        private string getTopLevelHierarchyPrefix(int? site)
+        {
+            return $"Example site{(site != null ? " " + site : "")}";
         }
     }
 }
